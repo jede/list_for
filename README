@@ -1,13 +1,25 @@
 ListFor
 =======
 
-Introduction goes here.
-
+Nifty plugin for making beautiful lists in rails. You get sorting, filtering and much more for free!
 
 Example
 =======
 
-Example goes here.
+<% list_for(@company_fair_relations, :sort => [:company, :name]) do |list| %>
+  <% list.column [:company, :name], :filter => true do |company_fair_relation| %>
+    <%= link_to company_fair_relation.company.name, edit_fair_company_fair_relation_path(@fair, company_fair_relation) %>
+  <% end %>
+  
+  <%= list.column [:state, :humanize], :filter => {:choices => CompanyFairRelation.states.collect{|s| s.to_s.humanize}} %>
+  <%= list.column [:responsible, :to_s], :filter => {:choices => Person.find_all_by_permission(:can_be_responsible_for_company).collect{|s| s.to_s}.sort } %>
+  <%= list.column :updated_at, :alias => 'Last changed' %>
+  <%= list.column :priority %>
+  
+  <% list.actions do |company_fair_relation| %>
+    <%= link_to image_tag("delete.png", :class => :icon, :style => "padding: 0px;"), fair_company_fair_relation_path(@fair, company_fair_relation), :confirm => 'Are you sure?', :method => :delete %>
+  <% end %>
+<% end %>
 
 
-Copyright (c) 2008 [name of plugin creator], released under the MIT license
+Copyright (c) 2008 Johannes Edelstam, released under the MIT license
