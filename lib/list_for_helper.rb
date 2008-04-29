@@ -157,7 +157,7 @@ module ListForHelper
           end
           
           collection = collection.select do |item|
-            eval = eval("item.#{accessor}")
+            eval = eval("item.#{accessor}.to_s")
             if exact
               eval == options[:filters][accessor]
             else
