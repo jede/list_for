@@ -45,16 +45,18 @@ module ListForHelper
       @filters = filters.is_a?(Hash) ? filters : {}
     end
     
-    def column(method, method_alias = nil, &block)
+    def column(method, options = {}, &block)
+      html_options = [:style, :class].inject("") { |html, attr| val = options.delete(attr); html << %' #{attr.to_s}="#{val.to_s}"' if val}
+      
       if block_given?
-        eval 'concat "<td>", binding', block.binding
+        eval "concat '<td#{html_options}>', binding", block.binding
         yield @object
-        eval 'concat "</td>", binding', block.binding
+        eval "concat '</td>', binding", block.binding
       else        
         accessor = ListForHelper::ListRow.list_method_to_accessor(method)
         value = eval("@object.#{accessor}.to_s")
         value = value.gsub(Regexp.new("(#{@filters[accessor]})", "i"), '<span class="highlight">\1</span>') unless @filters[accessor].blank?
-        '<td>'+value+'</td>'
+        "<td#{html_options}>"+value+'</td>'
       end
     end
     
