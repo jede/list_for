@@ -46,8 +46,12 @@ module ListForHelper
     end
     
     def column(method, options = {}, &block)
-      html_options = [:style, :class].inject("") { |html, attr| val = options.delete(attr); html << %' #{attr.to_s}="#{val.to_s}"' if val}
-      
+      html_options = [:style, :class].inject("") do |html, attr| 
+        val = options.delete(attr)
+        html << %' #{attr.to_s}="#{val.to_s}"' if val
+        html
+      end
+
       if block_given?
         eval "concat '<td#{html_options}>', binding", block.binding
         yield @object
