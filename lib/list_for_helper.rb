@@ -74,6 +74,38 @@ module ListForHelper
   end
   
   class LinkRenderer < Kernel::WillPaginate::LinkRenderer
+    def page_link_or_span(page, span_class, text = nil)
+      text ||= page.to_s
+      classnames = Array[*span_class]
+      
+      if page and page != current_page
+        if @options[:update]
+          uri = URI.parse(@template.url_for(@options[:url]))
+          @url_params = {}
+          # page links should preserve GET parameters
+          stringified_merge @url_params, @template.params.except(:controller).except(:action) if @template.request.get?
+          stringified_merge @url_params, @options[:params] if @options[:params]
+
+          if param_name.index(/[^\w-]/)
+            page_param = (defined?(CGIMethods) ? CGIMethods : ActionController::AbstractRequest).parse_query_parameters("#{param_name}=#{page}")
+
+            stringified_merge @url_params, page_param
+          else
+            @url_params[param_name] = page
+          end
+          
+          uri.query = @url_params.to_query
+          
+          @template.link_to_remote text, :url => uri.to_s, :rel => rel_value(page), :class => classnames[1], :update => @options[:update], :method => @options[:method]
+        else
+          @template.link_to text, url_for(page), :rel => rel_value(page), :class => classnames[1]
+        end
+      else
+        @template.content_tag :span, text, :class => classnames.join(' ')
+      end
+    end
+    
+    # For compability with old versions of will_paginate
     def url_options(page)
       if param_name.to_s.include?('[')
         options = page
@@ -90,25 +122,6 @@ module ListForHelper
     end
   end
   
-  def make_paginate_object(array_object, page, per_page)
-    return array_object if array_object.is_a? WillPaginate::Collection
-    
-    size = array_object.size
-    entries = WillPaginate::Collection.create(page, per_page, size) do |pager|
-      if (page - 1) * per_page > size
-        start_pos = size - per_page
-        start_pos = 0 if start_pos < 0
-        end_pos = size
-      else
-        start_pos = (page - 1) * per_page
-        end_pos = start_pos + per_page
-        end_pos = size if end_pos > size
-      end
-      result = array_object[start_pos...end_pos]
-      pager.replace(result)
-    end    
-  end
-
   def list_for(collection, options = {}, html_options = {}, &block)
     @list_for ||= {}
     options[:name] = options[:name].blank? ? "default" : options[:name].to_s
@@ -117,7 +130,7 @@ module ListForHelper
 
     page = (options[:page] || 1).to_i
     per_page = (options[:per_page] || 20).to_i
-    prefix = "list_for" + (options[:name].blank? ? "" : "[" + options[:name] + "]")
+    #prefix = "list_for" + (options[:name].blank? ? "" : "[" + options[:name] + "]")
     
     list_settings = ListForHelper::ListSettings.new
     yield list_settings
@@ -137,7 +150,7 @@ module ListForHelper
         settings[:filter] = {} unless settings[:filter].is_a?(Hash)
         # Print out the filter field
         accessor = ListForHelper::ListRow.list_method_to_accessor(method)
-        name = prefix+'[filters]['+accessor+']'
+        name = "list_for[#{options[:name]}][filters][#{accessor}]"
         value = options[:filters][accessor].to_s
         concat('<div class="filter"><label>'+settings[:alias]+':</label> ', block.binding)
         if settings[:filter][:choices].is_a?(Array)
@@ -184,8 +197,16 @@ module ListForHelper
       heading = settings[:alias]
       accessor = ListForHelper::ListRow.list_method_to_accessor(method)
       icon = accessor == sort_accessor ? image_tag((sort_reverse ? "down" : "up")+".png", :class => "icon") : ""
-      uri_copy = add_to_uri(uri, {prefix+"[sort]" => accessor, prefix+"[page]" => page.to_s, prefix+"[reverse]" => ((!sort_reverse && accessor == sort_accessor) ? "1" : "0")})
-      concat("<th><a href=\"#{uri_copy.to_s}\">#{heading} #{icon}</a></th>", block.binding)
+      uri_copy = add_to_uri(uri, :list_for => {options[:name].to_sym => {:sort => accessor, :page => page.to_s, :reverse => ((!sort_reverse && accessor == sort_accessor) ? "1" : "0")}})
+      concat(content_tag(:th) do
+         if options[:update]
+           query = uri_copy.query
+           uri_copy.query = nil
+           link_to_remote("#{heading} #{icon}", :with => "'#{query}'", :method => options[:method], :url => uri_copy.to_s, :update => options[:update])
+         else
+           link_to("#{heading} #{icon}", uri_copy.to_s)
+         end
+      end, block.binding)
     end
     concat("<th>&nbsp;</th>", block.binding) if list_settings.actions?
     concat('</tr>', block.binding)
@@ -198,7 +219,7 @@ module ListForHelper
     collection = make_paginate_object(collection, page, per_page)
 
     collection.each do |item|
-      concat('<tr class="'+cycle('even', 'odd', :name => prefix)+'">', block.binding)
+      concat('<tr class="'+cycle('even', 'odd', :name => "list_for_#{options[:name]}")+'">', block.binding)
       yield ListForHelper::ListRow.new(item, options[:filters])
       concat('</tr>', block.binding)
     end
@@ -206,22 +227,52 @@ module ListForHelper
     concat('</table>', block.binding)
     
     concat(will_paginate(collection, 
-      :param_name => prefix+"[page]", 
-      :params => {
-        prefix+"[sort]" => options[:sort], 
-        prefix+"[reverse]" => options[:reverse],
-        prefix+"[filters]" => options[:filters]}, 
-      :renderer => ListForHelper::LinkRenderer).to_s, block.binding)
+      :param_name => "list_for[#{options[:name]}][page]", 
+      :params => {:list_for => {options[:name] => {
+        :sort => options[:sort], 
+        :reverse => options[:reverse] 
+      }}},
+      :renderer => ListForHelper::LinkRenderer,
+      :update => options[:update],
+      :url => options[:url],
+      :method => options[:method]).to_s, block.binding)
   end
   
   protected
   
   def add_to_uri(uri, params)
     uri_copy = uri.clone
-    uri_copy.query.to_s.split('&').each do |p| 
-      params[p.split('=')[0]] ||= p.split('=')[1].to_s
-    end
-    uri_copy.query = params.to_a.collect{|pair| pair[0].to_s+"="+pair[1].to_s}.join('&')
+    query_hash = (defined?(CGIMethods) ? CGIMethods : ActionController::AbstractRequest).
+      parse_query_parameters(uri_copy.query)
+    uri_copy.query = symbolize_all_keys(query_hash).merge(symbolize_all_keys(params)).to_query
     uri_copy
+  end
+  
+  def symbolize_all_keys(arg)
+    return arg unless arg.is_a? Hash
+    
+    arg.inject({}) do |hash, (key, value)|
+      hash[key.to_sym || key] = symbolize_all_keys(value)
+      hash
+    end
+  end
+  
+  def make_paginate_object(array_object, page, per_page)
+    return array_object if array_object.is_a? WillPaginate::Collection
+    
+    size = array_object.size
+    entries = WillPaginate::Collection.create(page, per_page, size) do |pager|
+      if (page - 1) * per_page > size
+        start_pos = size - per_page
+        start_pos = 0 if start_pos < 0
+        end_pos = size
+      else
+        start_pos = (page - 1) * per_page
+        end_pos = start_pos + per_page
+        end_pos = size if end_pos > size
+      end
+      result = array_object[start_pos...end_pos]
+      pager.replace(result)
+    end    
   end
 end
