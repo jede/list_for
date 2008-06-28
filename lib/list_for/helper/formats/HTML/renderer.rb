@@ -46,7 +46,6 @@ module ListFor
 
 
           def title_row
-            debugger
             concat '<tr>'
             @list_settings.methods.each do |method, settings|
               accessor = ListFor::Helper::ListSettings.list_method_to_accessor(method)
