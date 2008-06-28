@@ -46,6 +46,7 @@ module ListFor
 
 
           def title_row
+            debugger
             concat '<tr>'
             @list_settings.methods.each do |method, settings|
               accessor = ListFor::Helper::ListSettings.list_method_to_accessor(method)
@@ -54,15 +55,15 @@ module ListFor
               heading << " " + @template.image_tag((@options[:sort_reverse] ? "down" : "up")+".png", :class => "icon") if accessor == @options[:sort_accessor]
 
               uri_copy = add_to_uri(@options[:uri], :list_for => {@options[:name].to_sym => {:sort => accessor, :page => @options[:page].to_s, :reverse => ((!@options[:sort_reverse] && accessor == @options[:sort_accessor]) ? "1" : "0")}})
-              concat @template.content_tag(:th) do
+              concat(@template.content_tag(:th) do
                  if @options[:update]
                    query = uri_copy.query
                    uri_copy.query = nil
-                   link_to_remote(heading, :with => "'#{query}'", :method => @options[:method], :url => uri_copy.to_s, :update => @options[:update])
+                   @template.link_to_remote(heading, :with => "'#{query}'", :method => @options[:method], :url => uri_copy.to_s, :update => @options[:update])
                  else
-                   link_to(heading, uri_copy.to_s)
+                   @template.link_to(heading, uri_copy.to_s)
                  end
-              end
+              end)
             end
             concat '<th>&nbsp;</th>' if @list_settings.actions?
             concat '</tr>'
