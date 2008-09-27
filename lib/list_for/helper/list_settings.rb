@@ -12,7 +12,11 @@ module ListFor
         nil
       end
 
-      def actions(&block)
+      def actions(label = "", &block)
+        @methods["action_#{label}_#{rand}"] = {
+          :alias => label,
+          :is_heading => true
+        }
         @actions = true
         nil
       end
