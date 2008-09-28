@@ -1,7 +1,7 @@
 module ListFor
   module Helper
     module Formats
-      module CSV
+      module Csv
         class Renderer < ListFor::Helper::Formats::RendererBase
           def render(&block)
             @binding = block.binding

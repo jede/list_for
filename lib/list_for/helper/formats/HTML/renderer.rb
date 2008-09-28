@@ -1,7 +1,7 @@
 module ListFor
   module Helper
     module Formats
-      module HTML
+      module Html
         class Renderer < ListFor::Helper::Formats::RendererBase
           def render(&block)
             @binding = block.binding
@@ -81,18 +81,25 @@ module ListFor
                concat '</tr>'
              end
              concat '</table>'
-
+             
+             params = {:list_for => {@options[:name].to_sym => {
+                :sort => @options[:sort_accessor], 
+                :reverse => @options[:sort_reverse].to_s,
+                :filters => @options[:filters]
+              }}}
+             
              concat(@template.will_paginate(@collection, 
                :param_name => "list_for[#{@options[:name]}][page]", 
-               :params => {:list_for => {@options[:name].to_sym => {
-                 :sort => @options[:sort_accessor], 
-                 :reverse => @options[:sort_reverse].to_s,
-                 :filters => @options[:filters]
-               }}},
+               :params => params,
                :renderer => ListFor::Helper::LinkRenderer,
                :update => @options[:update],
                :url => @options[:url],
                :method => @options[:method]).to_s)
+
+            @options[:link_to].each do |format, url|
+              url = URI.parse(url.is_a?(Hash) ? @template.url_for(url) : url)
+              concat @template.content_tag(:p, @template.link_to(format.to_s, add_to_uri(url, params.merge(:page => @options[:page].to_s)).to_s))
+            end if @options[:link_to].is_a? Hash
           end
         end
       end

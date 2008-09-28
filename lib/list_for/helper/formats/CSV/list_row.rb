@@ -1,7 +1,7 @@
 module ListFor
   module Helper
     module Formats
-      module CSV
+      module Csv
         class ListRow  < ListFor::Helper::ListRowBase
           def initialize(object, filters)
             @object = object

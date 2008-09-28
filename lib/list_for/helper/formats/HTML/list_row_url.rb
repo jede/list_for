@@ -1,7 +1,7 @@
 module ListFor
   module Helper
     module Formats
-      module HTML
+      module Html
         class ListRowURL < ListFor::Helper::ListRowBase
           def initialize(object, filters)
             @object = object
