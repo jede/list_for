@@ -1,8 +1,23 @@
 module ListFor
   module Extensions
-    # def self.included(base)
-    #   base.extend(ClassMethods)
-    # end
+    
+    module ActiveRecord
+      module Base
+        module ClassMethods
+          
+          def paginate_search(query, options = {})
+            page, per_page, total = wp_parse_options(options)
+            pager = WillPaginate::Collection.new(page, per_page, total)
+            options.merge!(:offset => pager.offset, :limit => per_page)
+            result = find_by_contents(query, options)
+            returning WillPaginate::Collection.new(page, per_page, result.total_hits) do |pager|
+              pager.replace result
+            end
+          end
+        end
+      end
+    end
+    
     module ActionController
       module InstanceMethods
         def load_list_params
@@ -17,6 +32,7 @@ module ListFor
               end
             end
           end
+          ListFor::Request.params = @list_for
         end
       end
     end
@@ -64,5 +80,6 @@ module ListFor
         end
       end
     end
+  
   end
 end

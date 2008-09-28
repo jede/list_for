@@ -1,5 +1,12 @@
 # Include hook code here
 require 'will_paginate'
+Dir.glob(File.join(File.dirname(__FILE__), '/lib/*.rb')).each {|file| require file}
+Dir.glob(File.join(File.dirname(__FILE__), '/lib/*/*.rb')).each {|file| require file}
+Dir.glob(File.join(File.dirname(__FILE__), '/lib/*/*/*.rb')).each {|file| require file}
+Dir.glob(File.join(File.dirname(__FILE__), '/lib/*/*/*/*.rb')).each {|file| require file}
+Dir.glob(File.join(File.dirname(__FILE__), '/lib/*/*/*/*/*.rb')).each {|file| require file}
+
+ActiveRecord::Base.extend ListFor::Extensions::ActiveRecord::Base::ClassMethods
 ActionController::Base.class_eval { include ListFor::Extensions::ActionController::InstanceMethods }
 ActionController::Base.before_filter :load_list_params
 ActionController::Base.helper ListFor::Helper

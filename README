@@ -3,6 +3,8 @@ ListFor
 
 Nifty plugin for making beautiful lists in rails. You get sorting, filtering and much more for free!
 
+Note that list_for currently just works with MySQL.
+
 Example
 =======
 
