@@ -10,7 +10,7 @@ module ListFor
         nil
       end
 
-      def actions(&block)
+      def actions(label = nil, &block)
         nil
       end
       
