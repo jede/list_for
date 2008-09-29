@@ -55,16 +55,20 @@ module ListFor
 
               uri_copy = add_to_uri(@options[:uri], :list_for => {@options[:name].to_sym => {:sort => accessor, :page => @options[:page].to_s, :reverse => ((!@options[:sort_reverse] && accessor == @options[:sort_accessor]) ? "1" : "0")}})
               concat(@template.content_tag(:th) do
-                 if @options[:update]
-                   query = uri_copy.query
-                   uri_copy.query = nil
-                   @template.link_to_remote(heading, :with => "'#{query}'", :method => @options[:method], :url => uri_copy.to_s, :update => @options[:update])
-                 else
-                   @template.link_to(heading, uri_copy.to_s)
-                 end
+                if settings[:is_heading]
+                  heading
+                else
+                  if @options[:update]
+                    query = uri_copy.query
+                    uri_copy.query = nil
+                    @template.link_to_remote(heading, :with => "'#{query}'", :method => @options[:method], :url => uri_copy.to_s, :update => @options[:update])
+                  else
+                    @template.link_to(heading, uri_copy.to_s)
+                  end
+                end
               end)
             end
-            concat '<th>&nbsp;</th>' if @list_settings.actions?
+            # concat '<th>&nbsp;</th>' if @list_settings.actions?
             concat '</tr>'
           end
 

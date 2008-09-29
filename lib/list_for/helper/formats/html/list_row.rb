@@ -27,7 +27,7 @@ module ListFor
             end
           end
 
-          def actions(&block)
+          def actions(label = nil, &block)
             eval 'concat "<td>", binding', block.binding
             yield @object if block_given?
             eval 'concat "</td>", binding', block.binding
