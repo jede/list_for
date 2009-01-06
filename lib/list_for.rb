@@ -1,12 +1,17 @@
 # ListFor
 require "list_for/helper/link_renderer"
+require "list_for/helper/support"
 
 module ListFor
   module Helper
+    include ListFor::Helper::Support
+    
+    def thinking_list_for(klass, options = {}, html_options = {}, &block)
+      
+    end
     
     def will_list_for(klass, options = {}, html_options = {}, &block)
       options = ListFor::Request.parse_params(options)
-      options = parse_uri(options)
 
       list_settings = ListFor::Helper::ListSettings.new
       yield list_settings
@@ -65,27 +70,20 @@ module ListFor
           klass.paginate_search(query, options_for_will_paginate)
         end
       
-      render_class = 
-        case options[:format]
-        when :csv, :Csv
-          Formats::Csv::Renderer
-        else
-          Formats::Html::Renderer
-        end
-      
-      render_class.new(collection, list_settings, self, options).render(&block)
+      choose_renderer(options[:format]).new(collection, list_settings, self, options).render(&block)
       
     end
     
     def list_for(collection, options = {}, html_options = {}, &block)
       options = ListFor::Request.parse_params(options)
-      options = parse_uri(options)
       
       list_settings = ListFor::Helper::ListSettings.new
       yield list_settings
     
       options[:use_filters] = !list_settings.methods.detect {|k,v| v[:filter] }.nil?
-      unless collection.is_a? WillPaginate::Collection
+      
+      
+      unless is_will_paginate_compatible?(collection)
         if options[:use_filters]
           list_settings.methods.each do |method, settings|
             # Do the filtering!
@@ -119,24 +117,22 @@ module ListFor
           collection.sort!{ |a,b| (eval("a.#{options[:sort_accessor]}") <=> eval("b.#{options[:sort_accessor]}") || -1)*order }
         end
       end
-      render_class = 
-        case options[:format]
-        when :csv, :Csv
-          Formats::Csv::Renderer
-        when :xls, :excel
-          Formats::Xls::Renderer
-        else
-          Formats::Html::Renderer
-        end
       
-      render_class.new(collection, list_settings, self, options).render(&block)
+      choose_renderer(options[:format]).new(collection, list_settings, self, options).render(&block)
     end
-    
+
     protected
     
-    def parse_uri(options)
-      options[:uri] = URI.parse(options[:url].is_a?(Hash) ? url_for(options[:url]) : (options[:url] || url_for))
-      options
+    def choose_renderer(format)
+      case format
+      when :csv, :Csv
+        Formats::Csv::Renderer
+      when :xls, :excel
+        Formats::Xls::Renderer
+      else
+        Formats::Html::Renderer
+      end
     end
+    
   end
 end

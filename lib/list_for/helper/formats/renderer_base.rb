@@ -2,6 +2,8 @@ module ListFor
   module Helper
     module Formats
       class RendererBase
+        include ListFor::Helper::Support
+        
         def initialize(collection, list_settings, template, options)
           @template = template
           @options = options
@@ -14,8 +16,6 @@ module ListFor
         def concat(str)
           @template.concat str, @binding
         end
-
-        protected
 
         protected
 
@@ -34,10 +34,20 @@ module ListFor
             hash
           end
         end
-
+        
         def make_paginate_object(array_object, page, per_page)
-          return array_object if array_object.is_a? WillPaginate::Collection
-
+          
+          if is_will_paginate_compatible?(array_object)
+          
+            if is_ultrasphinx_collection?(array_object)
+              search = Ultrasphinx::Search.new(array_object.options.symbolize_keys.merge(:page => page, :per_page => per_page))
+              search.run
+              return search
+            end
+            
+            return array_object
+          end
+          
           size = array_object.size
           entries = WillPaginate::Collection.create(page, per_page, size) do |pager|
             if (page - 1) * per_page > size

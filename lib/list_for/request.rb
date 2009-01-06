@@ -1,6 +1,12 @@
 module ListFor
   class Request
+    cattr_accessor :controller
     cattr_accessor :params
+    
+    def self.init(controller, params)
+      Request.controller = controller
+      Request.params = params || {}
+    end
     
     def self.parse_params(options)
       Request.params ||= {}
@@ -19,7 +25,14 @@ module ListFor
       options[:sort_accessor] = ListFor::Helper::ListSettings.list_method_to_accessor(options[:sort])
       options[:sort_reverse] = options[:reverse] == "1" || options[:reverse] === true
       options[:filters] = options[:filters] || {}
+      url_params = 
+        if options[:url].is_a?(Hash)
+          controller.url_for(options[:url])
+        else
+          (options[:url] || controller.url_for)
+        end
+      options[:uri] = URI.parse(url_params)
       options
-    end
+    end    
   end
 end

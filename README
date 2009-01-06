@@ -5,6 +5,8 @@ Nifty plugin for making beautiful lists in rails. You get sorting, filtering and
 
 Note that list_for currently just works with MySQL.
 
+List for has seamless support for thinking sphinx and ultra sphinx! You pick! :) Just hand your collection to list for and your done!
+
 Example
 =======
 
@@ -25,3 +27,11 @@ Example
 
 
 Copyright (c) 2008 Johannes Edelstam, released under the MIT license
+
+TODO
+====
+
+* Sorting for sphinx
+* Fix will_paginate support thinking sphinx style
+* Write tests :O
+* Split the extensions in separate files

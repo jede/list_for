@@ -32,7 +32,7 @@ module ListFor
               end
             end
           end
-          ListFor::Request.params = @list_for
+          ListFor::Request.init(self, @list_for)
         end
       end
     end
@@ -76,6 +76,28 @@ module ListFor
             0
           else
             1
+          end
+        end
+      end
+    end
+  
+    module ThinkingSphinx
+      module ActiveRecord
+        def self.included(base)
+          base.class_eval do
+            class << self
+              def search_with_list_for(*args)
+                options = args.extract_options!
+                params = ListFor::Request.parse_params(options[:list_for] || {})
+                options[:page] ||= params[:page]
+                options[:per_page] ||= params[:per_page]
+                
+                args << options
+                search_without_list_for(*args)
+              end
+              alias_method_chain :search, :list_for
+              
+            end
           end
         end
       end
