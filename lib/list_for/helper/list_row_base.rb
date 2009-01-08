@@ -18,13 +18,12 @@ module ListFor
         nil
       end
       
-      def self.list_method_to_accessor(method)
-        if method.is_a? Array
-          method.collect{|m| m.to_s}.join('.')
-        else
-          method.to_s
-        end
+      protected
+      
+      def eval_concat(str, binding)
+        eval "concat(\"#{str}\"#{Rails.version > '2.2.0' ? '' : ', binding'})", binding
       end
+      
     end
   end
 end

@@ -11,6 +11,7 @@ module ListFor
     end
     
     def will_list_for(klass, options = {}, html_options = {}, &block)
+      raise "will_list_for is deprecated! :("
       options = ListFor::Request.parse_params(options)
 
       list_settings = ListFor::Helper::ListSettings.new
@@ -79,15 +80,15 @@ module ListFor
       
       list_settings = ListFor::Helper::ListSettings.new
       yield list_settings
-    
-      options[:use_filters] = !list_settings.methods.detect {|k,v| v[:filter] }.nil?
       
+      options[:sort_accessor] = list_settings.list_method_to_accessor(options[:sort])
+      options[:use_filters] = !list_settings.methods.detect {|k,v| v[:filter] }.nil?
       
       unless is_will_paginate_compatible?(collection)
         if options[:use_filters]
           list_settings.methods.each do |method, settings|
             # Do the filtering!
-            accessor = ListFor::Helper::ListSettings.list_method_to_accessor(method)
+            accessor = list_settings.list_method_to_accessor(method)
             unless options[:filters][accessor].blank?
               exact = 
                if not settings[:filter].is_a? Hash

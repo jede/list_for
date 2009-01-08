@@ -14,7 +14,11 @@ module ListFor
         def render; end
 
         def concat(str)
-          @template.concat str, @binding
+          if Rails.version > "2.2.0"
+            @template.concat str
+          else
+            @template.concat str, @binding
+          end
         end
 
         protected

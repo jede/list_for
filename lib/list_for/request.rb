@@ -22,16 +22,17 @@ module ListFor
       options[:page] = (options[:page] || 1).to_i
       options[:per_page] = (options[:per_page] || 20).to_i
 
-      options[:sort_accessor] = ListFor::Helper::ListSettings.list_method_to_accessor(options[:sort])
       options[:sort_reverse] = options[:reverse] == "1" || options[:reverse] === true
       options[:filters] = options[:filters] || {}
-      url_params = 
-        if options[:url].is_a?(Hash)
+      uri_params = 
+        if options[:url].is_a?(Hash) || options[:url].is_a?(String)
           controller.url_for(options[:url])
+        elsif params[:url].is_a?(String)
+          params[:url]
         else
           (options[:url] || controller.url_for)
         end
-      options[:uri] = URI.parse(url_params)
+      options[:uri] = URI.parse(uri_params)
       options
     end    
   end

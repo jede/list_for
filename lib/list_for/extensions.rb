@@ -91,6 +91,10 @@ module ListFor
                 params = ListFor::Request.parse_params(options[:list_for] || {})
                 options[:page] ||= params[:page]
                 options[:per_page] ||= params[:per_page]
+                unless params[:sort].blank?
+                  options[:order] ||= params[:sort].to_sym
+                  options[:sort_mode] ||= params[:sort_reverse] ? :desc : :asc
+                end
                 
                 args << options
                 search_without_list_for(*args)

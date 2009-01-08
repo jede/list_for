@@ -26,7 +26,7 @@ module ListFor
                 search_button = true
                 settings[:filter] = {} unless settings[:filter].is_a?(Hash)
                 # Print out the filter field
-                accessor = ListFor::Helper::ListSettings.list_method_to_accessor(method)
+                accessor = @list_settings.list_method_to_accessor(method)
                 name = "list_for[#{@options[:name]}][filters][#{accessor}]"
                 value = @options[:filters][accessor].to_s
                 concat '<div class="filter"><label>'+settings[:alias]+':</label> '
@@ -48,11 +48,10 @@ module ListFor
           def title_row
             concat '<tr>'
             @list_settings.methods.each do |method, settings|
-              accessor = ListFor::Helper::ListSettings.list_method_to_accessor(method)
+              accessor = @list_settings.list_method_to_accessor(method)
 
               heading = settings[:alias]
               heading << " " + @template.image_tag((@options[:sort_reverse] ? "down" : "up")+".png", :class => "icon") if accessor == @options[:sort_accessor]
-
               uri_copy = add_to_uri(@options[:uri], :list_for => {@options[:name].to_sym => {:sort => accessor, :page => @options[:page].to_s, :reverse => ((!@options[:sort_reverse] && accessor == @options[:sort_accessor]) ? "1" : "0")}})
               concat(@template.content_tag(:th) do
                 if settings[:is_heading]
@@ -81,7 +80,7 @@ module ListFor
              @collection = make_paginate_object(@collection, @options[:page], @options[:per_page])
              @collection.each do |item|
                concat '<tr class="'+@template.cycle('even', 'odd', :name => "list_for_#{@options[:name]}")+'">'
-                yield ListRow.new(item, @options[:filters])
+                yield ListRow.new(item, @options[:filters], @list_settings)
                concat '</tr>'
              end
              concat '</table>'

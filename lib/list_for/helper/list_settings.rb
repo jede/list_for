@@ -8,6 +8,7 @@ module ListFor
 
       def column(method, options = {}, &block)
         options[:alias] = (method.is_a?(Array) ? method.first : method).to_s.humanize unless options[:alias]
+        options[:accessor] = (options[:sort_using] || list_method_to_method(method)).to_s
         @methods[method] = options
         nil
       end
@@ -34,12 +35,32 @@ module ListFor
       end
 
       def accessors
-        @methods.keys.collect{|m| ListFor::Helper::ListSettings.list_method_to_accessor(m)}
+        @methods.keys.collect{|m| list_method_to_accessor(m)}
       end
-
+      
       def uses_accessor?(accessor)
         accessors.include?(accessor)
       end
+      
+      def list_method_to_accessor(method)
+        if @methods[method].nil?
+          list_method_to_method(method)
+        else
+          @methods[method][:accessor].to_s
+        end
+      end
+      
+      def list_method_to_method(method)
+        method = method.split('.') if method.is_a?(String)
+        
+        if method.is_a? Array
+          method.collect{|m| m.to_s}.join('.')
+        else
+          method.to_s
+        end
+        
+      end
+      
     end
   end
 end
