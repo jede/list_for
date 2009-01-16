@@ -1,14 +1,16 @@
 module ListFor
   class Request
-    cattr_accessor :controller
-    cattr_accessor :params
+    cattr_accessor :controller, :params, :initiated
     
     def self.init(controller, params)
+      Request.initiated = true
       Request.controller = controller
       Request.params = params || {}
     end
     
     def self.parse_params(options)
+      return options unless initiated
+      
       Request.params ||= {}
       options[:name] = 
       if !options[:name].blank?

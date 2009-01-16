@@ -51,7 +51,7 @@ module ListFor
               accessor = @list_settings.list_method_to_accessor(method)
 
               heading = settings[:alias]
-              heading << " " + @template.image_tag((@options[:sort_reverse] ? "down" : "up")+".png", :class => "icon") if accessor == @options[:sort_accessor]
+              heading << " " + @template.image_tag((@options[:sort_reverse] ? "down" : "up")+".png", :class => "icon") if !accessor.blank? && accessor == @options[:sort_accessor]
               uri_copy = add_to_uri(@options[:uri], :list_for => {@options[:name].to_sym => {:sort => accessor, :page => @options[:page].to_s, :reverse => ((!@options[:sort_reverse] && accessor == @options[:sort_accessor]) ? "1" : "0")}})
               concat(@template.content_tag(:th) do
                 if settings[:is_heading]

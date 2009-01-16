@@ -113,7 +113,7 @@ module ListFor
           end
         end
         
-        if options[:sort_accessor] && list_settings.uses_accessor?(options[:sort_accessor])
+        if !options[:sort_accessor].blank? && list_settings.uses_accessor?(options[:sort_accessor])
           order = options[:sort_reverse] ? -1 : 1
           collection.sort!{ |a,b| (eval("a.#{options[:sort_accessor]}") <=> eval("b.#{options[:sort_accessor]}") || -1)*order }
         end
