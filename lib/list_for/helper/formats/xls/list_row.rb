@@ -5,13 +5,15 @@ module ListFor
     module Formats
       module Xls
         class ListRow  < ListFor::Helper::ListRowBase
-          def initialize(object, filters)
+          def initialize(object, filters, list_settings)
+            @object = object
+            @list_settings = list_settings
             @object = object
             @values = []
           end
 
           def column(method, options = {}, &block)
-            accessor = ListFor::Helper::ListSettings.list_method_to_accessor(method)
+            accessor = @list_settings.list_method_to_accessor(method)
             @values << eval("@object.#{accessor}.to_s")
             nil
           end

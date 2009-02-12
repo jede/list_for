@@ -6,10 +6,6 @@ module ListFor
   module Helper
     include ListFor::Helper::Support
     
-    def thinking_list_for(klass, options = {}, html_options = {}, &block)
-      
-    end
-    
     def will_list_for(klass, options = {}, html_options = {}, &block)
       raise "will_list_for is deprecated! :("
       options = ListFor::Request.parse_params(options)

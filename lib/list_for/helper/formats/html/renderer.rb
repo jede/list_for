@@ -100,9 +100,9 @@ module ListFor
                :method => @options[:method]).to_s)
 
             @options[:link_to].each do |format, url|
-              url = URI.parse(url.is_a?(Hash) ? @template.url_for(url) : url)
+              url = URI.parse(url.is_a?(Hash) ? @template.url_for(url) : url.to_s)
               concat @template.content_tag(:p, @template.link_to(format.to_s, add_to_uri(url, params.merge(:page => @options[:page].to_s)).to_s))
-            end if @options[:link_to].is_a? Hash
+            end unless @options[:link_to].blank?
           end
         end
       end
