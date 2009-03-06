@@ -79,7 +79,7 @@ module ListFor
 
              @collection = make_paginate_object(@collection, @options[:page], @options[:per_page])
              @collection.each do |item|
-               concat '<tr class="'+@template.cycle('even', 'odd', :name => "list_for_#{@options[:name]}")+'">'
+               concat '<tr '+@list_settings.attributes_for(item, {:class => @template.cycle('even', 'odd', :name => "list_for_#{@options[:name]}")})+'>'
                 yield ListRow.new(item, @options[:filters], @list_settings)
                concat '</tr>'
              end

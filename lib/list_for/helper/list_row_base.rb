@@ -1,6 +1,8 @@
 module ListFor
   module Helper
     class ListRowBase
+      attr_reader :row_options_block
+      
       def initialize
         @actions = false
         @methods = ActiveSupport::OrderedHash.new
@@ -15,6 +17,10 @@ module ListFor
       end
       
       def url(&block)
+        nil
+      end
+      
+      def row(&block)
         nil
       end
       

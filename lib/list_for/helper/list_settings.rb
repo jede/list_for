@@ -21,7 +21,17 @@ module ListFor
         @actions = true
         nil
       end
-
+      
+      def row(&block)
+        @row_options_block = block
+        nil
+      end
+      
+      def attributes_for(item, attributes = {})
+        @row_options_block.call(attributes, item) if @row_options_block
+        attributes.collect{|key, value| "#{key}=\"#{value}\""}.join(" ")
+      end
+      
       def actions?
         @actions
       end

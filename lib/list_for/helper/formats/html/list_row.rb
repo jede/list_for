@@ -42,6 +42,7 @@ module ListFor
           def url_for_row
             @url
           end
+          
         end
       end
     end
