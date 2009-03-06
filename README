@@ -11,6 +11,10 @@ Example
 =======
 
 <% list_for(@company_fair_relations, :sort => [:company, :name]) do |list| %>
+  <% list.row do |attributes, company_fair_relation|
+    attributes[:class] = company_fair_relation.good? ? "good" : "bad"
+  end %>
+
   <% list.column [:company, :name], :filter => true do |company_fair_relation| %>
     <%= link_to company_fair_relation.company.name, edit_fair_company_fair_relation_path(@fair, company_fair_relation) %>
   <% end %>
